@@ -1,7 +1,7 @@
 // CAP Theorem - CP (Consistent + Partition Tolerant) Example
 // This is an educational demonstration - not production-ready code
-const express = require('express');
-const http = require('http');
+import express, { Request, Response } from 'express';
+import http from 'http';
 
 // Create three Express apps to simulate three distributed nodes
 const app1 = express();
@@ -13,19 +13,28 @@ app1.use(express.json());
 app2.use(express.json());
 app3.use(express.json());
 
+// Define data interfaces
+interface Data {
+  value: string;
+}
+
+interface PartitionRequest {
+  partitioned: boolean;
+}
+
 // Shared state (in a real system, each node would have its own storage)
-let data = { value: 'initial' };
+let data: Data = { value: 'initial' };
 // Simulate whether a network partition is occurring
-let isPartitioned = false;
+let isPartitioned: boolean = false;
 
 // Node 1 - Leader node that handles write requests
-app1.get('/data', (req, res) => {
+app1.get('/data', (req: Request, res: Response) => {
   // Return current data
   res.json(data);
 });
 
 // Write endpoint - CP prioritizes consistency
-app1.post('/data', (req, res) => {
+app1.post('/data', (req: Request, res: Response) => {
   // Update local data first
   data.value = req.body.value;
   
@@ -35,9 +44,9 @@ app1.post('/data', (req, res) => {
   }
   
   // Function to replicate data to another node
-  const replicateToNode = (port) => {
+  const replicateToNode = (port: number): Promise<void> => {
     return new Promise((resolve, reject) => {
-      const options = {
+      const options: http.RequestOptions = {
         hostname: 'localhost',
         port: port,
         path: '/replicate',
@@ -63,27 +72,27 @@ app1.post('/data', (req, res) => {
 });
 
 // Node 2 - Follower node that accepts replication
-app2.post('/replicate', (req, res) => {
+app2.post('/replicate', (req: Request, res: Response) => {
   data = req.body;
   res.sendStatus(200);
 });
 
-app2.get('/data', (req, res) => {
+app2.get('/data', (req: Request, res: Response) => {
   res.json(data);
 });
 
 // Node 3 - Follower node that accepts replication
-app3.post('/replicate', (req, res) => {
+app3.post('/replicate', (req: Request, res: Response) => {
   data = req.body;
   res.sendStatus(200);
 });
 
-app3.get('/data', (req, res) => {
+app3.get('/data', (req: Request, res: Response) => {
   res.json(data);
 });
 
 // Endpoint to simulate network partition
-app1.post('/partition', (req, res) => {
+app1.post('/partition', (req: Request<{}, {}, PartitionRequest>, res: Response) => {
   isPartitioned = req.body.partitioned;
   res.json({ isPartitioned });
 });

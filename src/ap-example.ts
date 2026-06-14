@@ -1,7 +1,7 @@
 // CAP Theorem - AP (Available + Partition Tolerant) Example
 // This is an educational demonstration - not production-ready code
-const express = require('express');
-const http = require('http');
+import express, { Request, Response } from 'express';
+import http from 'http';
 
 // Create three Express apps to simulate three distributed nodes
 const app1 = express();
@@ -13,13 +13,19 @@ app1.use(express.json());
 app2.use(express.json());
 app3.use(express.json());
 
+// Define data interfaces
+interface VersionedData {
+  value: string;
+  version: number;
+}
+
 // Each node maintains its own state with version numbers for conflict resolution
-let node1Data = { value: 'initial', version: 1 };
-let node2Data = { value: 'initial', version: 1 };
-let node3Data = { value: 'initial', version: 1 };
+let node1Data: VersionedData = { value: 'initial', version: 1 };
+let node2Data: VersionedData = { value: 'initial', version: 1 };
+let node3Data: VersionedData = { value: 'initial', version: 1 };
 
 // Function to update data with a new version number
-const updateData = (current, newValue) => {
+const updateData = (current: VersionedData, newValue: string): VersionedData => {
   return {
     value: newValue,
     version: current.version + 1
@@ -27,13 +33,13 @@ const updateData = (current, newValue) => {
 };
 
 // Conflict resolution - higher version wins
-const mergeData = (a, b) => {
+const mergeData = (a: VersionedData, b: VersionedData): VersionedData => {
   return a.version > b.version ? a : b;
 };
 
 // Asynchronous replication (doesn't wait for success)
-const replicate = (fromPort, toPort, data) => {
-  const options = {
+const replicate = (fromPort: number, toPort: number, data: VersionedData): void => {
+  const options: http.RequestOptions = {
     hostname: 'localhost',
     port: toPort,
     path: '/sync',
@@ -49,12 +55,12 @@ const replicate = (fromPort, toPort, data) => {
 };
 
 // Node 1 endpoints
-app1.get('/data', (req, res) => {
+app1.get('/data', (req: Request, res: Response) => {
   // Always respond with local data
   res.json(node1Data);
 });
 
-app1.post('/data', (req, res) => {
+app1.post('/data', (req: Request, res: Response) => {
   // Update local data immediately
   node1Data = updateData(node1Data, req.body.value);
   // Try to replicate to other nodes asynchronously
@@ -64,42 +70,42 @@ app1.post('/data', (req, res) => {
   res.json({ success: true, data: node1Data });
 });
 
-app1.post('/sync', (req, res) => {
+app1.post('/sync', (req: Request, res: Response) => {
   // Merge incoming data with local data
   node1Data = mergeData(node1Data, req.body);
   res.sendStatus(200);
 });
 
 // Node 2 endpoints
-app2.get('/data', (req, res) => {
+app2.get('/data', (req: Request, res: Response) => {
   res.json(node2Data);
 });
 
-app2.post('/data', (req, res) => {
+app2.post('/data', (req: Request, res: Response) => {
   node2Data = updateData(node2Data, req.body.value);
   replicate(4002, 4001, node2Data);
   replicate(4002, 4003, node2Data);
   res.json({ success: true, data: node2Data });
 });
 
-app2.post('/sync', (req, res) => {
+app2.post('/sync', (req: Request, res: Response) => {
   node2Data = mergeData(node2Data, req.body);
   res.sendStatus(200);
 });
 
 // Node 3 endpoints
-app3.get('/data', (req, res) => {
+app3.get('/data', (req: Request, res: Response) => {
   res.json(node3Data);
 });
 
-app3.post('/data', (req, res) => {
+app3.post('/data', (req: Request, res: Response) => {
   node3Data = updateData(node3Data, req.body.value);
   replicate(4003, 4001, node3Data);
   replicate(4003, 4002, node3Data);
   res.json({ success: true, data: node3Data });
 });
 
-app3.post('/sync', (req, res) => {
+app3.post('/sync', (req: Request, res: Response) => {
   node3Data = mergeData(node3Data, req.body);
   res.sendStatus(200);
 });
