@@ -1,0 +1,16 @@
+{
+  "name": "nodejs-cap-theorem-demo",
+  "version": "1.0.0",
+  "description": "CAP Theorem demonstration with CP and AP examples in Node.js",
+  "main": "index.js",
+  "scripts": {
+    "cp": "node cp-example.js",
+    "ap": "node ap-example.js"
+  },
+  "keywords": ["cap-theorem", "distributed-systems", "nodejs"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
