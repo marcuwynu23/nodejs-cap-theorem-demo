@@ -1,6 +1,6 @@
 # CAP Theorem Demonstration
 
-This project is **an educational example to demonstrate CAP theorem concepts**. It's a simplified implementation and should NOT be used in production. Real-world distributed systems use much more sophisticated algorithms and tools.
+This project is a demonstration of the CAP Theorem, showing practical implementations of CP (Consistent + Partition Tolerant) and AP (Available + Partition Tolerant) systems in Node.js. It is **an educational example** - a simplified implementation and should NOT be used in production. Real-world distributed systems use much more sophisticated algorithms and tools.
 
 ## What is CAP Theorem?
 -------------------------
